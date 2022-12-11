@@ -3,7 +3,7 @@
 
 import { readFileSync } from 'fs';
 import path from 'path';
-import { format } from 'prettier';
+import { format as _format } from 'prettier';
 
 import * as SortJsonPlugin from '.';
 
@@ -59,51 +59,43 @@ const unconventionalKeys = [
   '\u0020',
 ];
 
+const format = (source: string, options: SortJsonPlugin.Options = {}) => {
+  return _format(source, {
+    filepath: 'foo.json',
+    parser: 'json',
+    plugins: [SortJsonPlugin],
+    ...options,
+  });
+};
+
 describe('Sort JSON', () => {
   it('should return an empty string unchanged', () => {
-    const output = format('', {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-    });
+    const output = format('');
 
     expect(output).toBe('');
   });
 
   it('should return an empty string when given a newline', () => {
-    const output = format('\n', {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-    });
+    const output = format('\n');
 
     expect(output).toBe('');
   });
 
   it('should throw Syntax Error in parser for invalid JSON', () => {
     expect(() => {
-      format('{', {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-      });
+      format('{');
     }).toThrow(/^Unexpected token \(1:2\)/u);
   });
 
   it('should throw if custom sort file does not exist', () => {
     expect(() => {
       format('{}', {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'non-existent-sort.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'non-existent-sort.json',
+        ),
       });
     }).toThrow(/^ENOENT/u);
   });
@@ -111,17 +103,12 @@ describe('Sort JSON', () => {
   it('should throw if custom sort file has invalid JSON', () => {
     expect(() => {
       format('{}', {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'invalid-json.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'invalid-json.json',
+        ),
       });
     }).toThrow(/^(Unexpected end of JSON input|Expected property name)/u);
   });
@@ -129,17 +116,12 @@ describe('Sort JSON', () => {
   it('should throw if custom sort file is an array', () => {
     expect(() => {
       format('{}', {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'invalid-array.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'invalid-array.json',
+        ),
       });
     }).toThrow(/^Invalid custom sort order file/u);
   });
@@ -147,17 +129,12 @@ describe('Sort JSON', () => {
   it('should throw if custom sort file has invalid category sort values', () => {
     expect(() => {
       format('{}', {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'invalid-category-sort.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'invalid-category-sort.json',
+        ),
       });
     }).toThrow(/^Invalid custom sort file entry/u);
   });
@@ -172,11 +149,7 @@ describe('Sort JSON', () => {
     const contents = readFileSync(sortOrderPath, 'utf8');
     const output = format(contents, {
       filepath: sortOrderPath,
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonSortOrder: sortOrderPath,
-      },
+      jsonSortOrder: sortOrderPath,
     });
 
     expect(output).toBe(contents);
@@ -185,11 +158,7 @@ describe('Sort JSON', () => {
   for (const validJson of validJsonExamples) {
     it(`should return '${validJson}' unchanged`, () => {
       const validJsonWithNewline = `${validJson}\n`;
-      const output = format(validJsonWithNewline, {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-      });
+      const output = format(validJsonWithNewline);
 
       expect(output).toBe(validJsonWithNewline);
     });
@@ -211,11 +180,7 @@ describe('Sort JSON', () => {
     };
 
     const input = JSON.stringify(fixture, null, 2);
-    const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-    });
+    const output = format(input);
 
     expect(output).toMatchSnapshot();
   });
@@ -236,11 +201,7 @@ describe('Sort JSON', () => {
     };
 
     const input = JSON.stringify(fixture, null, 2);
-    const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-    });
+    const output = format(input);
 
     expect(output).toMatchSnapshot();
   });
@@ -261,12 +222,7 @@ describe('Sort JSON', () => {
 
     const input = JSON.stringify(fixture, null, 2);
     const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonRecursiveSort: true,
-      },
+      jsonRecursiveSort: true,
     });
 
     expect(output).toMatchSnapshot();
@@ -288,12 +244,7 @@ describe('Sort JSON', () => {
 
     const input = JSON.stringify(fixture, null, 2);
     const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonRecursiveSort: true,
-      },
+      jsonRecursiveSort: true,
     });
 
     expect(output).toMatchSnapshot();
@@ -320,12 +271,7 @@ describe('Sort JSON', () => {
 
     const input = JSON.stringify(fixture, null, 2);
     const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonRecursiveSort: true,
-      },
+      jsonRecursiveSort: true,
     });
 
     expect(output).toMatchSnapshot();
@@ -352,12 +298,7 @@ describe('Sort JSON', () => {
 
     const input = JSON.stringify(fixture, null, 2);
     const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonRecursiveSort: true,
-      },
+      jsonRecursiveSort: true,
     });
 
     expect(output).toMatchSnapshot();
@@ -388,12 +329,7 @@ describe('Sort JSON', () => {
 
     const input = JSON.stringify(fixture, null, 2);
     const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonRecursiveSort: true,
-      },
+      jsonRecursiveSort: true,
     });
 
     expect(output).toMatchSnapshot();
@@ -424,12 +360,7 @@ describe('Sort JSON', () => {
 
     const input = JSON.stringify(fixture, null, 2);
     const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonRecursiveSort: true,
-      },
+      jsonRecursiveSort: true,
     });
 
     expect(output).toMatchSnapshot();
@@ -441,11 +372,7 @@ describe('Sort JSON', () => {
     }, {});
 
     const input = JSON.stringify(fixture, null, 2);
-    const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-    });
+    const output = format(input);
 
     expect(output).toMatchSnapshot();
   });
@@ -459,11 +386,7 @@ describe('Sort JSON', () => {
       }, {});
 
     const input = JSON.stringify(fixture, null, 2);
-    const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-    });
+    const output = format(input);
 
     expect(output).toMatchSnapshot();
   });
@@ -485,12 +408,7 @@ describe('Sort JSON', () => {
 
     const input = JSON.stringify(fixture, null, 2);
     const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonRecursiveSort: true,
-      },
+      jsonRecursiveSort: true,
     });
 
     expect(output).toMatchSnapshot();
@@ -513,12 +431,7 @@ describe('Sort JSON', () => {
 
     const input = JSON.stringify(fixture, null, 2);
     const output = format(input, {
-      filepath: 'foo.json',
-      parser: 'json',
-      plugins: [SortJsonPlugin],
-      ...{
-        jsonRecursiveSort: true,
-      },
+      jsonRecursiveSort: true,
     });
 
     expect(output).toMatchSnapshot();
@@ -542,17 +455,12 @@ describe('Sort JSON', () => {
 
       const input = JSON.stringify(fixture, null, 2);
       const output = format(input, {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'simple-sort.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'simple-sort.json',
+        ),
       });
 
       expect(output).toMatchSnapshot();
@@ -575,17 +483,12 @@ describe('Sort JSON', () => {
 
       const input = JSON.stringify(fixture, null, 2);
       const output = format(input, {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'simple-sort.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'simple-sort.json',
+        ),
       });
 
       expect(output).toMatchSnapshot();
@@ -616,17 +519,12 @@ describe('Sort JSON', () => {
 
       const input = JSON.stringify(fixture, null, 2);
       const output = format(input, {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'numeric-sort.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'numeric-sort.json',
+        ),
       });
 
       expect(output).toMatchSnapshot();
@@ -655,17 +553,12 @@ describe('Sort JSON', () => {
 
       const input = JSON.stringify(fixture, null, 2);
       const output = format(input, {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'numeric-sort.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'numeric-sort.json',
+        ),
       });
 
       expect(output).toMatchSnapshot();
@@ -719,17 +612,12 @@ describe('Sort JSON', () => {
 
       const input = JSON.stringify(fixture, null, 2);
       const output = format(input, {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'complex-sort.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'complex-sort.json',
+        ),
       });
 
       expect(output).toMatchSnapshot();
@@ -779,17 +667,12 @@ describe('Sort JSON', () => {
 
       const input = JSON.stringify(fixture, null, 2);
       const output = format(input, {
-        filepath: 'foo.json',
-        parser: 'json',
-        plugins: [SortJsonPlugin],
-        ...{
-          jsonSortOrder: path.resolve(
-            __dirname,
-            '..',
-            'fixtures',
-            'complex-sort.json',
-          ),
-        },
+        jsonSortOrder: path.resolve(
+          __dirname,
+          '..',
+          'fixtures',
+          'complex-sort.json',
+        ),
       });
 
       expect(output).toMatchSnapshot();

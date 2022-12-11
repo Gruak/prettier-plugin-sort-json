@@ -9,7 +9,7 @@ import type {
 } from '@babel/types';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { Parser } from 'prettier';
+import { Parser, Options as PrettierOptions } from 'prettier';
 import { parsers as babelParsers } from 'prettier/parser-babel';
 
 const integerPrefixRegex = /^(\d+)/u;
@@ -278,3 +278,7 @@ export const options = {
     type: 'path' as const,
   },
 };
+
+export type Options = Partial<
+  Record<keyof typeof options, boolean | string> | PrettierOptions
+>;
