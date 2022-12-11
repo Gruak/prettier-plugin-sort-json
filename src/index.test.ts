@@ -64,6 +64,7 @@ const format = (source: string, options: SortJsonPlugin.Options = {}) => {
     filepath: 'foo.json',
     parser: 'json',
     plugins: [SortJsonPlugin],
+    ...{ jsonSortEnable: true },
     ...options,
   });
 };
@@ -85,6 +86,32 @@ describe('Sort JSON', () => {
     expect(() => {
       format('{');
     }).toThrow(/^Unexpected token \(1:2\)/u);
+  });
+
+  it('should act as prettier without plugin', () => {
+    const fixture = {
+      z: null,
+      a: null,
+      $: null,
+      b: null,
+      0: null,
+      exampleNestedObject: {
+        z: null,
+        exampleArray: ['z', 'b', 'a'],
+        examplePrimitive: 1,
+        a: null,
+      },
+    };
+
+    const input = JSON.stringify(fixture, null, 2);
+    const outputWithPlugin = format(input, {
+      jsonSortEnable: false,
+    });
+    const outputWithoutPlugin = format(input, {
+      plugins: [],
+    });
+
+    expect(outputWithPlugin).toStrictEqual(outputWithoutPlugin);
   });
 
   it('should throw if custom sort file does not exist', () => {

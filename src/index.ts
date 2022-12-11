@@ -176,7 +176,12 @@ export const parsers = {
     parse(text, _parsers, options: any) {
       const ast: Expression = babelParsers.json.parse(text, _parsers, options);
 
-      const { filepath, jsonRecursiveSort, jsonSortOrder } = options;
+      const { filepath, jsonRecursiveSort, jsonSortOrder, jsonSortEnable } =
+        options;
+
+      if (!jsonSortEnable) {
+        return ast;
+      }
 
       if (
         jsonSortOrder &&
@@ -276,6 +281,13 @@ export const options = {
     description: 'A path to a JSON file specifying a custom sort order',
     since: '0.0.3',
     type: 'path' as const,
+  },
+  jsonSortEnable: {
+    category: 'json-sort',
+    default: false,
+    description: 'Enable JSON sorting',
+    since: '0.0.4',
+    type: 'boolean' as const,
   },
 };
 
